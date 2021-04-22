@@ -1,0 +1,143 @@
+
+############################################################
+##
+## Code from Barrier Options Lecture Notes
+##
+## Keep in mind that the style guides for programming code
+## are not always adhered to because of space constraints
+## in the lecture notes.
+##
+############################################################
+
+
+
+## Stock payoff function.
+ST <- function(s) s
+
+## Stock price function.
+F_ST <- function(t, s) s
+
+
+
+## Bond payoff function.
+BO <- function(s) 1
+
+## Bond price function.
+F_BO <- function(t, s) exp(-r * (T - t))
+
+
+############################################################
+
+
+## Cash-or-nothing call payoff function.
+H <- function(s) if (s > L) 1 else 0
+
+## Cash-or-nothing call price function.
+F_H <- function(t, s) {
+  d2 <- (log(s/L)+(r-(1/2)*sigma^2)*(T-t)) / (sigma*sqrt(T-t))
+  exp(-r * (T - t)) * pnorm(d2)
+}
+
+
+############################################################
+
+
+## European call payoff function.
+C <- function(s) max(s - K, 0)
+
+## European call price function (i.e. Black-Scholes formula).
+F_C <- function(t, s, K) {
+  d1 <- (log(s/K)+(r+(1/2)*sigma^2)*(T-t)) / (sigma*sqrt(T-t))
+  d2 <- d1 - sigma * sqrt(T - t)
+  pnorm(d1) * s - pnorm(d2) * K * exp(-r * (T - t))
+}
+
+
+############################################################
+
+
+## Price of down-and-out contract on bond.
+F_BO_DO <- function(t, s) {
+  if (s <= L) return(0)
+  const <- (L / s)^(2 * (r - (1/2) * sigma^2) / sigma^2)
+  F_H(t, s) - const * F_H(t, L^2 / s)
+}
+
+
+############################################################
+
+
+## Price of down-and-out contract on stock.
+F_ST_DO <- function(t, s) {
+  if (s <= L) return(0)
+  const <- (L / s)^(2 * (r - (1/2) * sigma^2) / sigma^2)
+  price <- L * F_H(t, s) - L * const * F_H(t, L^2 / s)
+  price + F_C(t, s, L) - const * F_C(t, L^2 / s, L)
+}
+
+
+############################################################
+
+
+## Price of down-and-out contract on European call.
+F_C_DO <- function(t, s) {
+  if (s <= L) return(0)
+  const <- (L / s)^(2 * (r - (1/2) * sigma^2) / sigma^2)
+  if (L < K) return(F_C(t, s, K) - const * F_C(t, L^2 / s, K))
+  price <- F_C(t, s, L) + (L - K) * F_H(t, s)
+  price - const*(F_C(t, L^2 / s, L)+(L-K)*F_H(t, L^2 / s))
+}
+
+
+############################################################
+
+
+## Variables about the economy.
+r <- 0.01
+sigma <- 0.3
+
+## Variables about the option.
+K <- 40
+L <- 30
+T <- 1
+
+## Define stock prices for plotting.
+s <- seq(from = L, to = K + 10, length.out = 50)
+
+
+############################################################
+
+
+## Plot down-and-out contract on bond and visually compare 
+## it with the contract that does *not* have a barrier.
+price_DO <- sapply(s, F_BO_DO, t = 0)
+price <- sapply(s, F_BO, t = 0)
+plot(s, price_DO, type = "l", col = "blue", ylim = c(0, 1))
+lines(s, price, col = "black")
+
+
+############################################################
+
+
+## Plot down-and-out contract on stock and visually compare 
+## it with the contract that does *not* have a barrier.
+price_DO <- sapply(s, F_ST_DO, t = 0)
+price <- sapply(s, F_ST, t = 0)
+plot(s, price_DO, type = "l", col = "blue")
+lines(s, price, col = "black")
+
+
+############################################################
+
+
+## Plot down-and-out contract on call and visually compare 
+## it with the contract that does *not* have a barrier.
+price_DO <- sapply(s, F_C_DO, t = 0)
+price <- sapply(s, F_C, t = 0, K = K)
+plot(s, price_DO, type = "l", col = "blue")
+lines(s, price, col = "black")
+
+
+############################################################
+
+
