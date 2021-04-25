@@ -4,15 +4,6 @@ ST <- function(s) s
 ## Stock price function.
 F_ST <- function(t, s) s
 
-
-
-## Bond payoff function.
-BO <- function(s) 1
-
-## Bond price function.
-F_BO <- function(t, s) exp(-r * (T - t))
-
-
 ############################################################
 
 
@@ -66,28 +57,6 @@ T <- 1
 
 ## Define stock prices for plotting.
 s <- seq(from = L, to = K + 10, length.out = 50)
-
-
-############################################################
-
-
-## Plot down-and-out contract on bond and visually compare 
-## it with the contract that does *not* have a barrier.
-price_DO <- sapply(s, F_BO_DO, t = 0)
-price <- sapply(s, F_BO, t = 0)
-plot(s, price_DO, type = "l", col = "blue", ylim = c(0, 1))
-lines(s, price, col = "black")
-
-
-############################################################
-
-
-## Plot down-and-out contract on stock and visually compare 
-## it with the contract that does *not* have a barrier.
-price_DO <- sapply(s, F_ST_DO, t = 0)
-price <- sapply(s, F_ST, t = 0)
-plot(s, price_DO, type = "l", col = "blue")
-lines(s, price, col = "black")
 
 
 ############################################################
