@@ -52,6 +52,15 @@ F_C <- function(t, s, K) {
   pnorm(d1) * s - pnorm(d2) * K * exp(-r * (T - t))
 }
 
+## European put payoff function
+P <- function(s) max(K - s, 0)
+
+## European put price function (i.e. Black-Scholes formula)
+F_P <- function(t, s, K) {
+  d1 <- (log(s/K)+(r+(1/2)*sigma^2)*(T-t)) / (sigma*sqrt(T-t))
+  d2 <- d1 - sigma * sqrt(T - t)
+  -pnorm(-d1)*s + pnorm(-d2) * K * exp(-r * (T - t))
+}
 
 ############################################################
 
@@ -88,6 +97,45 @@ F_C_DO <- function(t, s) {
   price - const*(F_C(t, L^2 / s, L)+(L-K)*F_H(t, L^2 / s))
 }
 
+
+############################################################
+
+
+## Price of down-and-out contract on European put.
+F_P_DO <- function(t, s) {
+  if (s >= L) return(0) 
+  if (L > K) return(0)
+  const <- (L / s)^(2 * (r - (1/2) * sigma^2) / sigma^2)
+  price <- F_P(t, s, K) - F_P(t, s, L) + (L - K) * (1 - F_H(t, s))
+  price - const*(F_P(t, L^2 / s, K) - F_P(t, L^2 / s, L) + (L - K) * (1 - F_H(t, L^2 / s)))
+}
+
+
+
+############################################################
+
+
+## Price of down-and-in contract on European call.
+F_C_DI <- function(t,s){
+  if (s >= L) return(0)
+  if (L < K) return(0)
+  const <- (L / s)^(2 * (r - (1/2) * sigma^2) / sigma^2)
+  price <- F_C(t, s, K) - F_C(t, s, L) - (L - K) * F_H(t, s)
+  price + const*(F_C(t, L^2 / s, K) - F_C(t, L^2 / s, L) - (L - K) * F_H(t, L^2 / s))
+}    
+    
+    
+############################################################
+
+
+## Price of down-and-in contract on European put.
+F_P_DI <- function(t,s){
+  if (s >= L) return(0)
+  const <- (L / s)^(2 * (r - (1/2) * sigma^2) / sigma^2)
+  if (L > K) return(F_P(t, s, K) + const * F_P(t, s, K))
+  price <- F_P(t, s, L) + (L - K) * (1 - F_H(t, s))
+  price + const*(F_P(t, L^2 / s, L) + (L - K) * (1 - F_H(t, L^2 / s)))
+}    
 
 ############################################################
 
